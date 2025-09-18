@@ -1,4 +1,4 @@
-Trong bài lab01 này, em triển khai:  
+Trong bài lab02 này, em triển khai:  
 - **Interface `Vectorizer`**: `CountVectorizer` (chuyển văn bản thành vector tần suất từ).  
 - Thử nghiệm trên một số câu ví dụ và trên **bộ dữ liệu UD English-EWT**.  
 ---
