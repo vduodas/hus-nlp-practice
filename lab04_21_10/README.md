@@ -1,0 +1,1 @@
+python -m lab04_21_10.test.lab5_test

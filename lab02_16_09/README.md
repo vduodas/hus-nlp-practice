@@ -25,7 +25,7 @@ def fit_transform(self, corpus: list[str]) -> list[list[int]]:
 **Nguyên tắc:**  
 
 - **Khởi tạo (`__init__`)**  
-  - Nhận vào một tokenizer (đã được implement ở lab01, xem tại [README-lab-01](lab01_16_09/README.md); mặc định dùng `SimpleTokenizer`).  
+  - Nhận vào một tokenizer (đã được implement ở lab01, xem tại [README-lab-01](HUS-NLP\lab01_16_09\README.md); mặc định dùng `SimpleTokenizer`).  
   - Tạo cấu trúc từ vựng `_vocabulary` để lưu ánh xạ **token → index**.  
 
 - **Học từ vựng (`fit`)**  
