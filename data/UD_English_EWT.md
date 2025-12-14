@@ -1,0 +1,3 @@
+Universal Dependencies English Web Treebank (UD English-EWT) là một tập dữ liệu cú pháp phụ thuộc chuẩn (gold standard) cho tiếng Anh, được xây dựng dựa trên English Web Treebank (LDC2012T13). Tập dữ liệu gồm 16.622 câu với tổng cộng 254.820 từ, được thu thập từ nhiều thể loại nội dung web khác nhau như weblogs, newsgroups, email, đánh giá và Yahoo! Answers.
+
+[Official repository](https://github.com/UniversalDependencies/UD_English-EWT)
