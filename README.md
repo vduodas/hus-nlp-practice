@@ -61,6 +61,8 @@ Hoặc chạy trực tiếp file:
 python test/lab4_spark_word2vec_demo.py
 ```
 
+Chi tiết từng bài thực hành (bao gồm cả cách chạy) được mô tả trong thư mục report/ hoặc notebook tương ứng.
+
 ---
 
 ## Thông tin

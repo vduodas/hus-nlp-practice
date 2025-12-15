@@ -1,13 +1,24 @@
-Trong bài lab02 này, em triển khai:  
-- **Interface `Vectorizer`**: `CountVectorizer` (chuyển văn bản thành vector tần suất từ).  
-- Thử nghiệm trên một số câu ví dụ và trên **bộ dữ liệu UD English-EWT** (xem mô tả tại: [UD English-EWT description](../data/UD_English_EWT.txt)).  
+# Báo cáo Lab2: Mã hóa văn bản bằng vector tần suất từ
+
+## Giới thiệu
+
+Trong bài lab này, em triển khai và thí nghiệm với **CountVectorizer** – công cụ chuyển đổi văn bản thành vector tần suất từ (bag-of-words representation). Nội dung bài lab bao gồm:
+
+* Triển khai interface **`Vectorizer`** dưới dạng abstract class. ([file source](../src/core/interfaces.py))
+* Xây dựng lớp **`CountVectorizer`** để chuyển đổi tập hợp tài liệu thành Document-Term Matrix. ([file source](../src/representations/count_vectorizer.py))
+* Thử nghiệm trên một số câu ví dụ và trên **bộ dữ liệu UD English-EWT** (xem mô tả tại [đây](../data/UD_English_EWT.md)).
+
+Mục tiêu của bài lab là hiểu rõ cách chuyển đổi dữ liệu văn bản dạng string thành biểu diễn số học dạng vector, từ đó có thể sử dụng trong các mô hình học máy.
+
 ---
 
-## 1. Các bước triển khai
-### 1.1. Interface `Vectorizer`  
-- Được định nghĩa trong `core/interfaces.py` dưới dạng abstract class.  
-- Bắt buộc mọi vectorizer phải cài đặt 03 phương thức:  
-```
+## 1. Các bước thực hiện
+
+### 1.1. Thiết kế Interface `Vectorizer`
+
+Interface `Vectorizer` được định nghĩa trong file `src/core/interfaces.py` dưới dạng abstract class, đặc định ba phương thức cốt lõi mà mọi vectorizer phải cài đặt:
+
+```python
 @abstractmethod
 def fit(self, corpus: list[str]):
     pass    
@@ -21,115 +32,144 @@ def fit_transform(self, corpus: list[str]) -> list[list[int]]:
     pass    
 ```
 
-### 1.2. `CountVectorizer`
-**Nguyên tắc:**  
+Cách tiếp cận này cho phép:
+* **`fit()`**: Học vocabulary từ corpus.
+* **`transform()`**: Chuyển đổi tài liệu thành vector.
+* **`fit_transform()`**: Kết hợp hai bước trên.
 
-- **Khởi tạo (`__init__`)**  
-  - Nhận vào một tokenizer (đã được implement ở lab01, xem tại [report-lab-01](./lab1.md); mặc định dùng `SimpleTokenizer`).  
-  - Tạo cấu trúc từ vựng `_vocabulary` để lưu ánh xạ **token → index**.  
+---
 
-- **Học từ vựng (`fit`)**  
-  - Tokenize toàn bộ corpus (mỗi document thành danh sách token).  
-  - Gộp tất cả tokens thành một tập hợp duy nhất (loại bỏ trùng lặp).  
-  - Sắp xếp token theo thứ tự alphabet.  
-  - Gán index cho từng token trong vocabulary.  
+### 1.2. Triển khai `CountVectorizer`
 
-- **Biến đổi văn bản (`transform`)**  
-  - Với mỗi document:  
-    - Khởi tạo vector có kích thước bằng số lượng từ vựng.  
-    - Tokenize document, đếm số lần xuất hiện của từng token.  
-    - Ghi kết quả vào vector tương ứng.  
+CountVectorizer là bước chuyển đổi dữ liệu văn bản thành biểu diễn số học. Quy trình gồm ba phần chính:
 
-- **Kết hợp (`fit_transform`)**  
-  - Gọi `fit` để học vocabulary từ corpus.  
-  - Gọi `transform` để sinh ma trận document-term matrix.  
+#### 1.2.1. Khởi tạo (`__init__`)
+* Nhận vào một **tokenizer** (đã được implement ở lab01, xem tại [báo cáo lab1](./lab1.md)).
+* Mặc định dùng `SimpleTokenizer` nếu không được cung cấp.
+* Khởi tạo cấu trúc từ vựng `_vocabulary` để lưu ánh xạ **token → index**.
 
-## 2. Thử nghiệm 
-Sau khi pull sourcecode về, chạy tại cwd bằng lệnh 
+#### 1.2.2. Học từ vựng (`fit`)
+* **Tokenize toàn bộ corpus**: Mỗi tài liệu được tách thành danh sách token.
+* **Gộp tất cả tokens**: Tạo tập hợp duy nhất từ tất cả token trong corpus (loại bỏ trùng lặp).
+* **Sắp xếp token**: Sắp xếp theo thứ tự alphabet để đảm bảo tính nhất quán.
+* **Gán index**: Gán một index duy nhất cho từng token trong vocabulary.
+
+#### 1.2.3. Biến đổi văn bản (`transform`)
+* Với mỗi document:
+  * Khởi tạo vector có kích thước bằng số lượng token trong vocabulary.
+  * Tokenize document và đếm số lần xuất hiện của từng token.
+  * Ghi số đếm vào vị trí tương ứng trong vector.
+* Trả về Document-Term Matrix (DTM): ma trận shape `(n_documents, n_vocabulary)`.
+
+#### 1.2.4. Kết hợp (`fit_transform`)
+* Gọi `fit()` để học vocabulary từ corpus.
+* Gọi `transform()` để sinh ma trận document-term từ cùng corpus đó.
+* Trả về DTM.
+
+---
+
+## 2. Hướng dẫn chạy code
+
+Sau khi clone source code và kích hoạt môi trường ảo, chạy lệnh sau tại thư mục gốc của project:
+
+```bash
+python -m test.lab2_test
 ```
-python -m src.lab02_16_09.main
-```
-Kết quả thu được sẽ được hiển thị trực tiếp ra console.
-### 2.1. Test trên câu ví dụ
-Với corpus:
+
+Chương trình sẽ tự động:
+* Test trên các câu ví dụ.
+* Test trên ba đoạn văn bản từ UD English-EWT (mỗi đoạn 500 ký tự).
+* In ra vocabulary learned và Document-Term Matrix.
+
+---
+
+## 3. Phân tích kết quả
+
+### 3.1. Kết quả test trên câu ví dụ
+
+**Corpus test**:
 ```
 corpus = [
-        "I love NLP.",
-        "I love programming.",
-        "NLP is a subfield of AI."
-    ]
-```
-- **Bước 1: Fit và Transform**
-
-    - `CountVectorizer` sử dụng `RegexTokenizer` để tách token.
-
-    - Từ toàn bộ corpus, vectorizer học được vocabulary (tập từ duy nhất).
-
-    - Sau đó, corpus được chuyển thành Document-Term Matrix.
-
-- **Kết quả Vocabulary học được (chưa qua lọc bỏ dấu câu):**
-```
-{'.': 0, 'a': 1, 'ai': 2, 'i': 3, 'is': 4, 'love': 5, 'nlp': 6, 'of': 7, 'programming': 8, 'subfield': 9}
-```
-- **Document-Term Matrix thu được:**
-```
-[
- [0, 1, 0, 1, 1, 0, 0, 0],   # "I love NLP."
- [0, 1, 0, 1, 0, 0, 1, 0],   # "I love programming."
- [1, 0, 1, 0, 1, 1, 0, 1]    # "NLP is a subfield of AI."
+    "I love NLP.",
+    "I love programming.",
+    "NLP is a subfield of AI."
 ]
 ```
 
-- Giải thích:
-
-    - Mỗi hàng biểu diễn một câu (document).
-
-    - Mỗi cột tương ứng với một token trong vocabulary.
-
-    - Giá trị là số lần token xuất hiện trong document đó.
-
-### 2.2. Test trên dataset UD English EWT**
-- **Bước 1: Chuẩn bị dữ liệu**  
-    - Đọc file: `en_ewt-ud-train.txt`.  
-    - Trích 3 đoạn văn bản liên tiếp, mỗi đoạn dài 500 ký tự, coi như 3 document mẫu.  
-
-- **Bước 2: Vector hóa văn bản**
-    - Gọi fit_transform(sample_texts) để:
-    - Tokenize mỗi đoạn.
-    - Học vocabulary.
-    - Sinh Document-Term Matrix.
-
-### 2.3. Kết quả mẫu
+**Vocabulary học được** (sau khi regex tokenizer xử lý):
 ```
-Learned Vocabulary: {'.': 0, 'a': 1, 'ai': 2, 'i': 3, 'is': 4, 'love': 5, 'nlp': 6, 'of': 7, 'programming': 8, 'subfield': 9}
-Document-Term Matrix: [[1, 0, 0, 1, 0, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 1, 0, 0, 1, 0], [1, 1, 1, 0, 1, 0, 1, 1, 0, 1]]
-
---- Vectorizing Sample Text from UD_English-EWT ---
-[Document 1] First 500 characters: Al-Zaman : American forces killed Shaikh Abdullah al-Ani, the preacher at the
-mosque in the town of Qaim, near the Syrian border. [This killing of a respected
-cleric will be causing us trouble for years to come.] DPA: Iraqi authorities
-announced that they had busted up 3 terrorist cells operating in Baghdad. Two of
-them were being run by 2 officials of the Ministry of the Interior! The MoI in
-Iraq is equivalent to the US FBI, so this would be like having J. Edgar Hoover
-unwittingly employ at a h
-
-[Document 2] First 500 characters: igh level members of the Weathermen bombers back in the
-1960s. The third was being run by the head of an investment firm. You wonder if
-he was manipulating the market with his bombing targets. The cells were
-operating in the Ghazaliyah and al-Jihad districts of the capital. Although the
-announcement was probably made to show progress in identifying and breaking up
-terror cells, I don't find the news that the Baathists continue to penetrate the
-Iraqi government very hopeful. It reminds me too muc
-
-[Document 3] First 500 characters: h of the ARVN officers who
-were secretly working for the other side in Vietnam. Al-Zaman : Guerrillas
-killed a member of the Kurdistan Democratic Party after kidnapping him in Mosul.
-The police commander of Ninevah Province announced that bombings had declined 80
-percent in Mosul, whereas there had been a big jump in the number of
-kidnappings. On Wednesday guerrillas had kidnapped a cosmetic surgeon and his
-wife while they were on their way home. In Suwayrah, Kut Province, two car bombs
-were dis
-
-Learned Vocabulary: {'!': 0, "'": 1, ',': 2, '-': 3, '.': 4, '1960s': 5, '2': 6, '3': 7, '80': 8, ':': 9, '[': 10, ']': 11, 'a': 12, 'abdullah': 13, 'after': 14, 'al': 15, 'although': 16, 'american': 17, 'an': 18, 'and': 19, 'ani': 20, 'announced': 21, 'announcement': 22, 'arvn': 23, 'at': 24, 'authorities': 25, 'baathists': 26, 'back': 27, 'baghdad': 28, 'be': 29, 'been': 30, 'being': 31, 'big': 32, 'bombers': 33, 'bombing': 34, 'bombings': 35, 'bombs': 36, 'border': 37, 'breaking': 38, 'busted': 39, 'by': 40, 'capital': 41, 'car': 42, 'causing': 43, 'cells': 44, 'cleric': 45, 'come': 46, 'commander': 47, 'continue': 48, 'cosmetic': 49, 'declined': 50, 'democratic': 51, 'dis': 52, 'districts': 53, 'don': 54, 'dpa': 55, 'edgar': 56, 'employ': 57, 'equivalent': 58, 'fbi': 59, 'find': 60, 'firm': 61, 'for': 62, 'forces': 63, 'ghazaliyah': 64, 'government': 65, 'guerrillas': 66, 'h': 67, 'had': 68, 'having': 69, 'he': 70, 'head': 71, 'him': 72, 'his': 73, 'home': 74, 'hoover': 75, 'hopeful': 76, 'i': 77, 'identifying': 78, 'if': 79, 'igh': 80, 'in': 81, 'interior': 82, 'investment': 83, 'iraq': 84, 'iraqi': 85, 'is': 86, 'it': 87, 'j': 88, 'jihad': 89, 'jump': 90, 'kidnapped': 91, 'kidnapping': 92, 'kidnappings': 93, 'killed': 94, 'killing': 95, 'kurdistan': 96, 'kut': 97, 'level': 98, 'like': 99, 'made': 100, 'manipulating': 101, 'market': 102, 'me': 103, 'member': 104, 'members': 105, 'ministry': 106, 'moi': 107, 'mosque': 108, 'mosul': 109, 'muc': 110, 'near': 111, 'news': 112, 'ninevah': 113, 'number': 114, 'of': 115, 'officers': 116, 'officials': 117, 'on': 118, 'operating': 119, 'other': 120, 'party': 121, 'penetrate': 122, 'percent': 123, 'police': 124, 'preacher': 125, 'probably': 126, 'progress': 127, 'province': 128, 'qaim': 129, 'reminds': 130, 'respected': 131, 'run': 132, 'secretly': 133, 'shaikh': 134, 'show': 135, 'side': 136, 'so': 137, 'surgeon': 138, 'suwayrah': 139, 'syrian': 140, 't': 141, 'targets': 142, 'terror': 143, 'terrorist': 144, 'that': 145, 'the': 146, 'their': 147, 'them': 148, 'there': 149, 'they': 150, 'third': 151, 'this': 152, 'to': 153, 'too': 154, 'town': 155, 'trouble': 156, 'two': 157, 'unwittingly': 158, 'up': 159, 'us': 160, 'very': 161, 'vietnam': 162, 'was': 163, 'way': 164, 'weathermen': 165, 'wednesday': 166, 'were': 167, 'whereas': 168, 'while': 169, 'who': 170, 'wife': 171, 'will': 172, 'with': 173, 'wonder': 174, 'working': 175, 'would': 176, 'years': 177, 'you': 178, 'zaman': 179}
-Document-term matrix: [[1, 0, 3, 2, 4, 0, 1, 1, 0, 2, 1, 1, 2, 1, 0, 2, 0, 1, 0, 0, 1, 1, 0, 0, 2, 1, 0, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 5, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 8, 0, 1, 0, 1, 0, 2, 2, 0, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1], [0, 1, 1, 1, 5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 3, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 12, 0, 0, 0, 0, 1, 0, 2, 1, 0, 0, 0, 0, 1, 0, 1, 0, 3, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0], [0, 0, 3, 1, 4, 0, 0, 0, 1, 1, 0, 0, 3, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 1, 3, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 1, 1, 4, 1, 0, 2, 0, 1, 1, 0, 1, 1, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 5, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 3, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]]
+{'.': 0, 'a': 1, 'ai': 2, 'i': 3, 'is': 4, 'love': 5, 'nlp': 6, 'of': 7, 'programming': 8, 'subfield': 9}
 ```
+
+**Document-Term Matrix** (sau fit_transform):
+```
+[
+ [1, 0, 0, 1, 0, 1, 1, 0, 0, 0],   # "I love NLP."
+ [1, 0, 0, 1, 0, 1, 0, 0, 1, 0],   # "I love programming."
+ [1, 1, 1, 0, 1, 0, 1, 1, 0, 1]    # "NLP is a subfield of AI."
+]
+```
+
+**Giải thích**:
+* Mỗi hàng biểu diễn một tài liệu (document).
+* Mỗi cột tương ứng với một token trong vocabulary (theo thứ tự alphabet).
+* Giá trị là số lần token xuất hiện trong document đó.
+* Ví dụ: Document 1 ("I love NLP.") chứa token '.' 1 lần, 'i' 1 lần, 'love' 1 lần, 'nlp' 1 lần, và các token khác là 0 lần.
+
+### 3.2. Kết quả test trên UD English-EWT
+
+Khi test trên ba đoạn văn bản 500 ký tự từ UD English-EWT:
+
+**Sample documents** (mỗi document 500 ký tự):
+```
+[Document 1] Al-Zaman : American forces killed Shaikh Abdullah al-Ani, the preacher at the mosque in the town of Qaim...
+
+[Document 2] igh level members of the Weathermen bombers back in the 1960s. The third was being run by the head of an investment firm...
+
+[Document 3] h of the ARVN officers who were secretly working for the other side in Vietnam. Al-Zaman : Guerrillas killed a member...
+```
+
+**Kích thước Vocabulary learned**: 180 token duy nhất (bao gồm dấu câu, từ thường, từ viết hoa, số, v.v...)
+
+**Document-Term Matrix shape**: `(3, 180)` – ma trận 3 tài liệu × 180 token
+
+**Quan sát**:
+* Một số token xuất hiện trong nhiều document (ví dụ: "the", "of", "and", "a", "in", ".").
+* Một số token chỉ xuất hiện trong một document (ví dụ: "weathermen", "arvn", "guerrillas").
+* Tần suất từ cao nhất là token "the" với 8 lần xuất hiện trong Document 1, 3 lần trong Document 2, và 4 lần trong Document 3.
+
+### 3.3. Ưu điểm và hạn chế của CountVectorizer
+
+| Khía cạnh | Chi tiết |
+| :--- | :--- |
+| **Ưu điểm** | |
+| Đơn giản, dễ hiểu | Dễ triển khai và giải thích kết quả. |
+| Nhanh chóng | Thích hợp cho dữ liệu lớn. |
+| Không mất thông tin tần suất từ | Giữ nguyên thông tin về số lần xuất hiện. |
+| **Hạn chế** | |
+| Bỏ qua thứ tự từ | Câu "tôi yêu NLP" và "NLP yêu tôi" có vector giống nhau. |
+| Độ thưa cao | Hầu hết các phần tử trong ma trận là 0. |
+| Từ dừng ảnh hưởng lớn | Từ thường như "the", "a" chiếm ưu thế trong vector. |
+| Không xét cấu trúc ngữ pháp | Chỉ xét tần suất, không xét mối quan hệ ngữ pháp. |
+
+### 3.4. Cải tiến có thể
+
+* **TF-IDF (Term Frequency-Inverse Document Frequency)**: Áp dụng trọng số để giảm tầm quan trọng của từ thường.
+* **N-gram**: Thay vì chỉ dùng từ (unigram), sử dụng chuỗi từ (bigram, trigram) để giữ một phần thông tin về thứ tự.
+* **Lọc từ dừng (Stopword removal)**: Loại bỏ các từ thường như "the", "a", "is" trước khi vector hóa.
+
+---
+
+## 4. Kết luận
+
+Qua bài lab này, em đã:
+* Hiểu được cách chuyển đổi văn bản thành biểu diễn vector (bag-of-words).
+* Triển khai interface `Vectorizer` và lớp `CountVectorizer` đầy đủ.
+* Nhận ra rằng CountVectorizer là bước cơ bản nhưng quan trọng trong xử lý ngôn ngữ tự nhiên.
+
+Với CountVectorizer, dữ liệu văn bản bây giờ có thể được sử dụng trực tiếp trong các mô hình học máy (như Logistic Regression, Naive Bayes, SVM) để giải quyết các bài toán như phân loại văn bản, phân tích cảm xúc, v.v...
+
+## Tài liệu tham khảo
+- Scikit-learn – Text Feature Extraction: [https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction](https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction)
+
+- Jurafsky & Martin – Speech and Language Processing (Bag-of-Words & Vector Space Models): [https://web.stanford.edu/~jurafsky/slp3/6.pdf](https://web.stanford.edu/~jurafsky/slp3/6.pdf)
