@@ -70,13 +70,13 @@ Sau khi đưa câu qua pipeline của spaCy, mô hình xác định:
 
 #### Code
 
-//```python
+```python
 import spacy
 
 nlp = spacy.load("en_core_web_md")
 text = "The quick brown fox jumps over the lazy dog."
 doc = nlp(text)
-//```
+```
 
 ---
 
@@ -97,11 +97,11 @@ Việc trực quan hóa giúp:
 
 #### Code
 
-//```python
+```python
 for token in doc:
     children = [child.text for child in token.children]
     print(token.text, token.dep_, token.head.text, children)
-//```
+```
 
 Kết quả cho thấy cấu trúc cây phụ thuộc được spaCy xây dựng rõ ràng và nhất quán, phản ánh chính xác quan hệ ngữ pháp trong câu.
 
@@ -115,14 +115,14 @@ Dựa vào các nhãn phụ thuộc `nsubj` (chủ ngữ) và `dobj` (tân ngữ
 
 #### Code
 
-//```python
+```python
 if token.pos_ == "VERB":
     for child in token.children:
         if child.dep_ == "nsubj":
             subject = child.text
         if child.dep_ == "dobj":
             obj = child.text
-//```
+```
 
 Kết quả cho thấy spaCy có khả năng xác định chính xác các thành phần ngữ pháp ngay cả trong câu có cấu trúc phức tạp.
 
